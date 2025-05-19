@@ -1,42 +1,51 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Login from './components/Login';
-import AdminPage from './pages/AdminPage';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
 import UserPage from './pages/UserPage';
+import AdminPage from './pages/AdminPage';
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogin = (user) => {
+    setCurrentUser(user);
   };
 
   return (
-    <Router>
-      <div className="App">
-        <Navbar user={user} onLogout={handleLogout} />
-        <Routes>
-          <Route path="/" element={
-            user ? (
-              user.role === 'admin' ? (
-                <AdminPage />
-              ) : (
-                <UserPage userId={user.id} />
-              )
+    <div className="App">
+      <Routes>
+        <Route
+          path="/"
+          element={
+            currentUser ? (
+              <Navigate to={currentUser.role === 'admin' ? '/admin' : '/user'} />
             ) : (
               <Login onLogin={handleLogin} />
             )
-          } />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/user" element={<UserPage />} />
-        </Routes>
-      </div>
-    </Router>
+          }
+        />
+        <Route
+          path="/user"
+          element={
+            currentUser && currentUser.role === 'user' ? (
+              <UserPage user={currentUser} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            currentUser && currentUser.role === 'admin' ? (
+              <AdminPage admin={currentUser} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+      </Routes>
+    </div>
   );
 }
 
